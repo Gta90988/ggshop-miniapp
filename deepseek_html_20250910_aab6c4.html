@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GGshop - Магазин игр</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --primary-color: #8a2be2;
+            --secondary-color: #6a0dad;
+            --accent-color: #9370db;
+            --background-color: #f5f5f5;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 20px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .card {
+            background: var(--card-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .card-content {
+            margin-bottom: 15px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            text-align: center;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .button:hover {
+            background: var(--secondary-color);
+        }
+
+        .button-secondary {
+            background: var(--accent-color);
+        }
+
+        .button-success {
+            background: var(--success-color);
+        }
+
+        .button-warning {
+            background: var(--warning-color);
+            color: #000;
+        }
+
+        .button-danger {
+            background: var(--danger-color);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .balance-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .price-tag {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--success-color);
+            margin: 10px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 8px;
+            z-index: 1001;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 GGshop</h1>
+            <p>Лучший магазин игр в Telegram</p>
+        </div>
+
+        <div id="main-menu" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3 class="card-title">🛒 Магазин</h3>
+                    <p class="card-content">Игры по выгодным ценам с мгновенной доставкой</p>
+                    <button class="button" onclick="showTab('shop')">Перейти в магазин</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🏪 Маркетплейс</h3>
+                    <p class="card-content">Покупайте и продавайте игры у других пользователей</p>
+                    <button class="button" onclick="showTab('marketplace')">Перейти на маркетплейс</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">💰 Баланс</h3>
+                    <p class="card-content">Пополните баланс и совершайте покупки</p>
+                    <button class="button" onclick="showTab('balance')">Управление балансом</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">👤 Профиль</h3>
+                    <p class="card-content">Ваши данные и реферальная система</p>
+                    <button class="button" onclick="showTab('profile')">Мой профиль</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="shop" class="tab-content">
+            <h2>🛒 Магазин игр</h2>
+            <div id="shop-content"></div>
+            <button class="button" onclick="showTab('main-menu')">Назад</button>
+        </div>
+
+        <div id="marketplace" class="tab-content">
+            <h2>🏪 Маркетплейс</h2>
+            <div id="marketplace-content"></div>
+            <button class="button" onclick="showCreateListing()">📢 Создать объявление</button>
+            <button class="button" onclick="showTab('main-menu')">Назад</button>
+        </div>
+
+        <div id="balance" class="tab-content">
+            <h2>💰 Баланс</h2>
+            <div class="balance-display" id="balance-amount">0.00 руб.</div>
+            <button class="button button-success" onclick="depositBalance()">⭐ Пополнить баланс</button>
+            <button class="button" onclick="showTab('main-menu')">Назад</button>
+        </div>
+
+        <div id="profile" class="tab-content">
+            <h2>👤 Профиль</h2>
+            <div id="profile-content"></div>
+            <button class="button" onclick="showTab('main-menu')">Назад</button>
+        </div>
+
+        <div id="create-listing-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('create-listing-modal')">&times;</span>
+                <h3>📢 Создание объявления</h3>
+                <form id="listing-form">
+                    <div class="form-group">
+                        <label class="form-label">Название игры:</label>
+                        <input type="text" class="form-input" id="listing-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Описание:</label>
+                        <textarea class="form-input" id="listing-description" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Цена (руб.):</label>
+                        <input type="number" class="form-input" id="listing-price" min="1" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Платформа:</label>
+                        <select class="form-input" id="listing-platform" required>
+                            <option value="Steam">Steam</option>
+                            <option value="Xbox">Xbox</option>
+                            <option value="PS5">PS5</option>
+                            <option value="Nintendo">Nintendo Switch</option>
+                            <option value="Other">Другое</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="button button-success">Разместить объявление</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let user = tg.initDataUnsafe?.user;
+        let userData = null;
+
+        tg.expand();
+        tg.enableClosingConfirmation();
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            if (user) {
+                initializeUser();
+            } else {
+                showError("Пользователь не авторизован");
+            }
+        });
+
+        async function initializeUser() {
+            try {
+                // Здесь будет запрос к вашему бэкенду для получения данных пользователя
+                userData = {
+                    user_id: user.id,
+                    username: user.username,
+                    first_name: user.first_name,
+                    balance: 100.00, // Пример данных
+                    reputation: 5
+                };
+                
+                updateUI();
+            } catch (error) {
+                showError("Ошибка загрузки данных");
+            }
+        }
+
+        function updateUI() {
+            if (userData) {
+                document.getElementById('balance-amount').textContent = userData.balance.toFixed(2) + ' руб.';
+                updateProfileContent();
+                loadShopProducts();
+                loadMarketplaceListings();
+            }
+        }
+
+        function updateProfileContent() {
+            const profileContent = document.getElementById('profile-content');
+            profileContent.innerHTML = `
+                <div class="card">
+                    <h3>👤 Информация</h3>
+                    <p><strong>Имя:</strong> ${userData.first_name}</p>
+                    <p><strong>Username:</strong> @${userData.username || 'не указан'}</p>
+                    <p><strong>Баланс:</strong> ${userData.balance.toFixed(2)} руб.</p>
+                    <p><strong>Репутация:</strong> ${userData.reputation} ⭐</p>
+                </div>
+                <div class="card">
+                    <h3>📊 Реферальная система</h3>
+                    <p>Приглашайте друзей и получайте бонусы!</p>
+                    <p>Ваша ссылка: <code>https://t.me/GGshopBot?start=ref_${userData.user_id}</code></p>
+                </div>
+            `;
+        }
+
+        async function loadShopProducts() {
+            // Загрузка товаров магазина
+            const shopContent = document.getElementById('shop-content');
+            shopContent.innerHTML = '<div class="loading">Загрузка товаров...</div>';
+
+            try {
+                // Здесь будет запрос к вашему API
+                const products = [
+                    { id: 1, name: 'Cyberpunk 2077', description: 'Ключ для Steam', price: 1499.00, category: 'Steam' },
+                    { id: 2, name: 'FIFA 23', description: 'Ключ для Xbox', price: 1999.00, category: 'Xbox' },
+                    { id: 3, name: 'God of War Ragnarok', description: 'Ключ для PS5', price: 2499.00, category: 'PS5' }
+                ];
+
+                let html = '<div class="grid">';
+                products.forEach(product => {
+                    html += `
+                        <div class="card">
+                            <h3>${product.name}</h3>
+                            <p>${product.description}</p>
+                            <div class="price-tag">${product.price.toFixed(2)} руб.</div>
+                            <button class="button button-success" onclick="buyProduct(${product.id})">Купить</button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                shopContent.innerHTML = html;
+            } catch (error) {
+                shopContent.innerHTML = '<div class="error">Ошибка загрузки товаров</div>';
+            }
+        }
+
+        async function loadMarketplaceListings() {
+            // Загрузка объявлений маркетплейса
+            const marketplaceContent = document.getElementById('marketplace-content');
+            marketplaceContent.innerHTML = '<div class="loading">Загрузка объявлений...</div>';
+
+            try {
+                // Здесь будет запрос к вашему API
+                const listings = [
+                    { id: 1, title: 'The Witcher 3', description: 'Полное издание', price: 899.00, platform: 'Steam' },
+                    { id: 2, title: 'Halo Infinite', description: 'Цифровая версия', price: 1599.00, platform: 'Xbox' }
+                ];
+
+                let html = '<div class="grid">';
+                listings.forEach(listing => {
+                    html += `
+                        <div class="card">
+                            <h3>${listing.title}</h3>
+                            <p>${listing.description}</p>
+                            <p><strong>Платформа:</strong> ${listing.platform}</p>
+                            <div class="price-tag">${listing.price.toFixed(2)} руб.</div>
+                            <button class="button" onclick="viewListing(${listing.id})">Посмотреть</button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                marketplaceContent.innerHTML = html;
+            } catch (error) {
+                marketplaceContent.innerHTML = '<div class="error">Ошибка загрузки объявлений</div>';
+            }
+        }
+
+        function showTab(tabId) {
+            // Скрыть все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Показать выбранную вкладку
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showCreateListing() {
+            document.getElementById('create-listing-modal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function depositBalance() {
+            try {
+                // Открываем окно оплаты через Telegram
+                tg.showPopup({
+                    title: 'Пополнение баланса',
+                    message: 'Выберите сумму для пополнения',
+                    buttons: [
+                        {type: 'default', text: '100 рублей', id: '100'},
+                        {type: 'default', text: '500 рублей', id: '500'},
+                        {type: 'default', text: '1000 рублей', id: '1000'},
+                        {type: 'cancel', id: 'cancel'}
+                    ]
+                }, function(buttonId) {
+                    if (buttonId !== 'cancel') {
+                        processPayment(parseInt(buttonId));
+                    }
+                });
+            } catch (error) {
+                showError('Ошибка при пополнении баланса');
+            }
+        }
+
+        async function processPayment(amount) {
+            try {
+                // Здесь будет интеграция с платежной системой Telegram
+                showNotification(`Запрос на оплату ${amount} рублей отправлен`);
+                
+                // Имитация успешной оплаты
+                setTimeout(() => {
+                    userData.balance += amount;
+                    updateUI();
+                    showNotification(`Баланс пополнен на ${amount} рублей!`);
+                }, 2000);
+            } catch (error) {
+                showError('Ошибка обработки платежа');
+            }
+        }
+
+        function buyProduct(productId) {
+            tg.showPopup({
+                title: 'Подтверждение покупки',
+                message: 'Вы уверены, что хотите купить этот товар?',
+                buttons: [
+                    {type: 'default', text: 'Купить', id: 'buy'},
+                    {type: 'cancel', text: 'Отмена', id: 'cancel'}
+                ]
+            }, function(buttonId) {
+                if (buttonId === 'buy') {
+                    completePurchase(productId);
+                }
+            });
+        }
+
+        async function completePurchase(productId) {
+            try {
+                // Здесь будет логика покупки
+                showNotification('Покупка успешно завершена!');
+            } catch (error) {
+                showError('Ошибка при покупке');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? 'var(--success-color)' : 'var(--danger-color)';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function showError(message) {
+            showNotification(message, 'error');
+        }
+
+        // Обработка формы создания объявления
+        document.getElementById('listing-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('listing-title').value;
+            const description = document.getElementById('listing-description').value;
+            const price = parseFloat(document.getElementById('listing-price').value);
+            const platform = document.getElementById('listing-platform').value;
+
+            // Здесь будет отправка данных на сервер
+            console.log('Создание объявления:', { title, description, price, platform });
+            
+            showNotification('Объявление успешно создано!');
+            closeModal('create-listing-modal');
+            
+            // Очистка формы
+            document.getElementById('listing-form').reset();
+            
+            // Обновление списка объявлений
+            loadMarketplaceListings();
+        });
+    </script>
+</body>
+</html>
